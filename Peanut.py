@@ -1,4 +1,3 @@
-import sys
 import pjsua as pj
 import socket
 
