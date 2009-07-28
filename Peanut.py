@@ -26,15 +26,18 @@ class Phone():
         return self
     def register( self, username, password ):
         "Make an account register"
-        account = GenericAccount( username, password )
+	# TODO The Listener's should be passed by parameters
+        account = GenericAccount( username, password, AccountListener(), CallListener() )
         account.register()
         return account
 
 class GenericAccount():
-    def __init__( self, username, password ):
+    def __init__( self, username, password, listener, call_listener ):
         "Init of GenericAccount"
         self.incoming_calls = {} 
         self.id_call = 0
+        self.listener = listener
+        self.call_listener = call_listener
         # TODO add strategy logic for accounts 
         self.delegate = AzzuAccount( username, password, self )
     def next_id_call( self ):
@@ -53,7 +56,7 @@ class GenericAccount():
         id_call = self.next_id_call()
         peanut_call = Call( call, id_call )
         # Create Call Callback
-        call_callback = CallCallback( call )
+        call_callback = CallCallback( self.call_listener, peanut_call, call )
         call.set_callback( call_callback )
         # Append an incoming call to the phone
         self.incoming_calls[ id_call ] = peanut_call
@@ -96,9 +99,39 @@ class AzzuAccount():
         self.account.delete()
     def call( self, destination, id_call ):
         "Make a call for the destination"
-        callString = 'sip:' + str( destination ) + '@' + self.proxy
-        call = self.account.make_call( callString, CallCallback() )
-        return Call( call, id_call )
+        call_string = 'sip:' + str( destination ) + '@' + self.proxy
+        call_callback = CallCallback( self.generic_account.call_listener )
+        call = self.account.make_call( call_string, call_callback )
+        peanut_call = Call( call, id_call )
+        call_callback.peanut_call = peanut_call
+        return peanut_call
+
+class AccountListener():
+    def __init__( self ):
+        "Init an Account Listener"
+    def on_register( self, account ):
+	"Invoked when the account registred successfully"
+        print "Account Registred: Username " + account.delegate.username
+    def on_incoming_call( self, account, peanut_call ):
+        "Invoked when the account receive an incoming call"
+        print "Incoming Call for account with username " + account.delegate.username + "from: " + peanut_call.call.info().remote_uri
+#TODO Add here any other usefull listener method!
+
+class AccountCallback( pj.AccountCallback ):
+    def __init__( self, peanut_account, account=None, ):
+        "Create an Account Callback for the passed account"
+        self.peanut_account = peanut_account
+        self.listener = peanut_account.listener
+        pj.AccountCallback.__init__( self, account )
+    def on_incoming_call( self, call ):
+        # Register the incomming call into the account 
+        self.peanut_account.incoming_call( call )
+        #TODO chek if the id is really necessary into the call object
+        self.listener.on_incoming_call( self.peanut_account, Call( call, 0 ) )
+    def on_reg_state( self ):
+        "Register handler"
+        if self.account.info().reg_status == 200:
+            self.listener.on_register( self.peanut_account )
 
 class Call():
     def __init__( self, call, id ):
@@ -131,25 +164,29 @@ class Call():
     def unmute( self ):
         AudioManager().connect_call_audio( self.call )
 
-class AccountCallback( pj.AccountCallback ):
-    def __init__( self, peanut_account, account=None, ):
-        "Create an Account Callback for the passed phone"
-        self.peanut_account = peanut_account
-        pj.AccountCallback.__init__( self, account )
-    def on_incoming_call( self, call ):
-        # Register the incomming call into the phone
-        self.peanut_account.incoming_call( call )
-    def on_reg_state( self ):
-        "Register finished handler"
-        print 'Registration complete, status=', self.account.info().reg_status, \
-              '(' + self.account.info().reg_reason + ')'
+class CallListener():
+    def __init__( self ):
+        "Init a Call Listener"
+    def on_answer( self, peanut_call ):
+        "Invoked when a call is answered"
+        print "Call answered from " + peanut_call.call.info().remote_uri
+    def on_finished( self, peanut_call ):
+        "Invoked when a call is finished"
+        print "Call finished from " + peanut_call.call.info().remote_uri
+# TODO add more usefull listener methods
 
 class CallCallback( pj.CallCallback ):
-    def __init__( self, call=None ):
+    def __init__( self, call_listener, peanut_call=None, call=None ):
         "Create a Call Callback"
+        self.call_listener = call_listener
+        self.peanut_call = peanut_call
         pj.CallCallback.__init__( self, call )
-    def on_state(self):
+    def on_state( self ):
         "Intercept any call state change"
+        if self.call.info().state == pj.CallState.CONFIRMED:
+            self.call_listener.on_answer( self.peanut_call )
+        if self.call.info().state == pj.CallState.DISCONNECTED:
+            self.call_listener.on_finished( self.peanut_call )
         print 'Call is ', self.call.info().state_text,
         print 'last code =', self.call.info().last_code, 
         print '(' + self.call.info().last_reason + ')'        
