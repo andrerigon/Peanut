@@ -210,9 +210,6 @@ class CallCallback( pj.CallCallback ):
         # State where a call is finished and disconnected
         if self.call.info().state == pj.CallState.DISCONNECTED:
             self.call_listener.on_finished( self.peanut_call )
-        print 'Call is ', self.call.info().state_text,
-        print 'last code =', self.call.info().last_code, 
-        print '(' + self.call.info().last_reason + ')'        
     def on_media_state( self ):
         "Intercept any media state change"
         if self.call.info().media_state == pj.MediaState.ACTIVE:
