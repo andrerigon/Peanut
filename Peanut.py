@@ -46,6 +46,7 @@ class GenericAccount():
         "Init of GenericAccount"
         self.listener = listener
         self.call_listener = call_listener
+        self.registered = False
         # TODO add strategy logic for accounts 
         self.delegate = AzzuAccount( username, password, self )
 
@@ -57,14 +58,17 @@ class GenericAccount():
 
     def register_success( self ):
         "Invoked when this account registred successfully"
+        self.registered = True
         self.listener.on_register_success( self )
 
     def register_error( self ):
+        self.registered = False
         "Invoked when this account has an error during its register"
         self.listener.on_register_error( self )
 
     def unregister( self ):
         self.delegate.unregister()
+        self.registered = False
         self.listener.on_unregister( self )
 
     def call( self, destination ):
