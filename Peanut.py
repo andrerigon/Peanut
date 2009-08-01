@@ -31,7 +31,7 @@ class Phone():
 
     def register( self, username, password, account_listener = None, call_listener = None ):
         "Make an account register"
-	    if account_listener == None:
+	if account_listener == None:
             account_listener = AccountListener()
         if call_listener == None:
             call_listener = CallListener()
