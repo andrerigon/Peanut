@@ -30,7 +30,7 @@ class Phone():
             account_listener = AccountListener()
         if call_listener == None:
             call_listener = CallListener()
-        account = GenericAccount( username, password, AccountListener(), CallListener() )
+        account = GenericAccount( username, password, account_listener, call_listener )
         account.register()
         return account
 
@@ -250,4 +250,36 @@ class AudioManager():
         lib = pj.Lib.instance()
         call_slot = call.info().conf_slot
         lib.conf_disconnect( 0, call_slot )
- 
+    def list_audio_devices( self ):
+        "List all the audio devices into the system"
+        lib = pj.Lib.instance()
+        devices = lib.enum_snd_dev()
+        peanut_devices = []
+        i = 0
+        for dev in devices:
+            peanut_devices.append( AudioDevice( dev, i ) )
+            i += 1
+        return peanut_devices
+    def set_audio_devices( self, input, output ):
+        "Set the input and the output device for the PeanutPhone"
+        lib = pj.Lib.instance()
+        lib.set_snd_dev( input.id, output.id )
+        
+class AudioDevice():
+    def __init__( self, device, id ):
+        self.device = device
+        self.id = id
+    def is_output( self ):
+        return self.device.output_channels > 0
+    def is_input( self ):
+        return self.device.input_channels > 0
+    def is_active( self ):
+        lib = pj.Lib.instance()
+        active_ids = lib.get_snd_dev()
+        if self.is_input:
+            return self.id == active_ids[0]
+        elif self.is_output:
+            return self.id == active_ids[1]
+        return False
+    def name( self ):
+        return self.device.name
