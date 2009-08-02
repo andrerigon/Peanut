@@ -1,0 +1,8 @@
+#msg{
+	border: 0px solid red;
+	color: red;
+	height: auto;
+	width: 250px;
+	display: block;
+	overflow: visible;
+}

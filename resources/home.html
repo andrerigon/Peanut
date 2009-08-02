@@ -1,0 +1,29 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>home</title>
+	<meta name="generator" content="TextMate http://macromates.com/">
+	<meta name="author" content="Eliezer Rodrigues">
+	<script type="text/javascript" src="js/core.js"></script>
+	<script type="text/javascript" src="js/api.js"></script>
+	<style type="text/css">
+		@import url("css/style.css");
+		@import url("css/form.css");
+	</style>
+</head>
+<body>
+	<div id="msg"></div>
+	<form method="GET" action="Account://call">
+		<p><label for="destination">Numero:</label> <input type="text" id="destination" name="destination"/></p>
+		<p><input type="submit" value="Discar" />
+			<input type="button" value="Desligar" onclick="Call.hungup()" />
+			<input type="button" value="Atender" onclick="Call.answer()" /></p>
+	</form>
+	<center>
+	<a href="javascript: Account.balance()">Saldo</a> |  
+	<a href="javascript: Account.logout()">Logout</a>
+	</center>
+</body>
+</html>
