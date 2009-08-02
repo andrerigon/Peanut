@@ -5,7 +5,7 @@ Call.answer = function(){
 }
 
 Call.hungup = function(){
-	go("Account://hungup")
+	go("Account://hangup")
 }
 
 

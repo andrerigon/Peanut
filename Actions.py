@@ -35,8 +35,8 @@ class Account(GenericAction):
 	def answer(self):
 		self.__call.answer()
 	
-	def hungup(self):
-		self.__call.hungup()
+	def hangup(self):
+		self.__call.hangup()
 	
 	def balance(self):
 		self._view.msg("TODO: implement R$ 0,00")
