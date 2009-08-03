@@ -1,3 +1,15 @@
 Peanut is a lightweight softphone powered by python and pjsip.
 Enjoy =D
 We are just in draft fase, so be paciente
+
+install springpython:
+
+sudo apt-get install python-amara
+
+get and install Pyro:
+
+http://pyro.sourceforge.net/download.html
+
+get and install springpython
+
+http://www.springsource.com/download/community?project=Spring%20Python
