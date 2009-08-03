@@ -1,7 +1,7 @@
 from springpython.config import PythonConfig
 from springpython.config import Object
 from springpython.context import scope
-from Actions import *
+from action import *
 from PyQt4.QtWebKit import QWebView
 from Web import *
 
