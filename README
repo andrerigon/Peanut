@@ -2,14 +2,73 @@ Peanut is a lightweight softphone powered by python and pjsip.
 Enjoy =D
 We are just in draft fase, so be paciente
 
-install springpython:
 
-sudo apt-get install python-amara
+Dependencies 
 
-get and install Pyro:
+*Ubuntu
+Use apt-get to install: Python, qt, sip, PyQt, 
 
-http://pyro.sourceforge.net/download.html
 
-get and install springpython
+*Mac OS:
 
-http://www.springsource.com/download/community?project=Spring%20Python
+Install XCODE
+------------------------------------------------------------------------
+xcode313_2736_developerdvd.dmg
+
+
+Install Python 2.6.2 
+------------------------------------------------------------------------
+python-2.6.2-macosx2009-04-16.dmg
+
+
+Install QT 
+------------------------------------------------------------------------
+qt-sdk-mac-opensource-2009.03.1.dmg
+
+
+Install SIP 
+------------------------------------------------------------------------
+get sip-4.8.2.tar.gz in http://www.riverbankcomputing.com/software/sip/download
+
+Compiling sip
+python configure.py
+make
+sudo make install
+
+
+Install PyQt 
+------------------------------------------------------------------------
+get PyQt-mac-gpl-4.5.4.tar.gz in http://www.riverbankcomputing.com/software/pyqt/download
+Compiling PyQt
+python configure.py
+make -j 2
+sudo make install
+
+
+
+*Linux and Mac
+
+Install PJSIP:
+------------------------------------------------------------------------
+svn co http://svn.pjsip.org/repos/pjproject/trunk pjproject
+/configure && make && make dep
+cd pjsip-apps/src/python
+sudo make
+
+
+Install AMARA:
+------------------------------------------------------------------------
+get Amara-2.0a1.tar.gz in http://pypi.python.org/pypi/Amara/2.0a1
+sudo python setup.py install
+
+
+Install PYRO:
+------------------------------------------------------------------------
+get Pyro-3.9.1.tar.gz in http://pyro.sourceforge.net/download.html
+sudo python setup.py install
+
+
+Install SPRINGPYTHON:
+------------------------------------------------------------------------
+get springpython-1.0.0.RELEASE.tar.gz in http://www.springsource.com/download/community?project=Spring%20Python
+sudo python setup.py install
