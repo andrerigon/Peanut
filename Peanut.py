@@ -1,6 +1,6 @@
 import pjsua as pj
 import socket
-import md5
+import hashlib
 
 def log_cb(level, str, len):
     "Loggin callback"
@@ -133,7 +133,7 @@ class GenericAccount():
     @staticmethod
     def account_key( username, account_type ):
         string_key = str( username ) + str( account_type )
-        return md5.md5( string_key ).hexdigest()
+        return hashlib.md5( string_key ).hexdigest()
 
 
 class AzzuAccount():

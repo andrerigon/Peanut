@@ -3,7 +3,7 @@ from PyQt4.QtGui import *
 from action import *
 import sys, traceback
 from Peanut import Phone
-from SpringAppCtx import ActionBasedApplicationContext
+from spring import  *
 from springpython.context import ApplicationContext
 from Web import *
 
