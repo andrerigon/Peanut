@@ -1,6 +1,6 @@
 import sys
 from PyQt4.QtGui import QApplication
-from SpringAppCtx import ActionBasedApplicationContext
+from spring import  *
 from springpython.context import ApplicationContext
 
 if __name__ == "__main__":
