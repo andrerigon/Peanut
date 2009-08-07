@@ -72,3 +72,9 @@ Install SPRINGPYTHON:
 ------------------------------------------------------------------------
 get springpython-1.0.0.RELEASE.tar.gz in http://www.springsource.com/download/community?project=Spring%20Python
 sudo python setup.py install
+
+
+Install CHEETAH:
+------------------------------------------------------------------------
+get Cheetah-2.2.1.tar.gz in http://sourceforge.net/projects/cheetahtemplate/files/
+sudo python setup.py install

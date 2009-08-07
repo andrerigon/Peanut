@@ -1,11 +1,7 @@
-from PyQt4.QtCore import QTimer, QVariant, QUrl, SIGNAL
-from PyQt4.QtGui import *
-from action import *
-import sys, traceback
-from Peanut import Phone
+import sys
+from PyQt4.QtGui import QApplication
 from SpringAppCtx import ActionBasedApplicationContext
 from springpython.context import ApplicationContext
-from Web import *
 
 if __name__ == "__main__":
 	app = QApplication(sys.argv)

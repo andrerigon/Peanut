@@ -1,4 +1,6 @@
 from Peanut import Phone, AccountListener, CallListener
+from Cheetah.Template import Template
+from db import ProfileDb, Profile
 import re
 
 class Action:
@@ -11,7 +13,7 @@ class Account(Action):
 	__phone = None
 	
 	def register(self):
-		self.__acc = self.__getPhone().register( self.username, self.password, WebKitAccountListener(self.view), WebKitCallListener(self.view))
+		self.__acc = self.__get_phone().register( self.username, self.password, WebKitAccountListener(self.view), WebKitCallListener(self.view))
 		
 	def unregister(self):
 		#TODO nao deveria ser com um listener?
@@ -32,10 +34,41 @@ class Account(Action):
 	def balance(self):
 		self.view.msg("TODO: implement R$ 0,00")
 	
-	def __getPhone(self):
+	def __get_phone(self):
 		if self.__phone is None:
 			self.__phone = Phone().start();
 		return self.__phone;
+
+class App(Action):
+	
+	def start(self):
+		db = ProfileDb()
+		db.open()
+		
+		if db.size() == 0:
+			template = Template(file="web/profile_new.tpl")
+			return str(template)
+		else:
+			if db.size() == 1:
+				profile = db.get_first()
+				print "Register and redirect"
+				return
+			
+		template = Template(file="web/profile_select.tpl")
+		template.profiles = db.find_all()
+		db.close()
+		return str(template)
+
+class ProfileManager(Action):
+
+	def new(self):
+		db = ProfileDb()
+		db.open()
+		profile = Profile(self.name, self.type, self.username, self.password, self.auto_login)
+		db.add(profile)
+		db.close()
+		self.view.go("App.start.action")
+
 
 class WebKitAccountListener(AccountListener):
 	
@@ -67,4 +100,6 @@ class WebKitCallListener(CallListener):
 	def on_finished( self, peanut_call ):
 		self.view.msg("Chamada Desligada.")
 		CallListener.on_finished( self, peanut_call )
+		
+		
 	
