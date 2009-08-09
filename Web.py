@@ -77,7 +77,6 @@ class NetworkAccessManager(QNetworkAccessManager):
 			
 			if is_action:
 				fileAction = str(url.toEncoded()).rpartition(os.sep)[2].split(".")
-				print fileAction
 				actionName = fileAction[0]
 				methodName = fileAction[1]
 						

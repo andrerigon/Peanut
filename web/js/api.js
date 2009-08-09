@@ -12,6 +12,10 @@ Call.hangup = function(){
 
 var Account = {}
 
+Account.register = function(profileName){
+	go("Account://register?profileName="+profileName)
+}
+
 Account.logout = function(){
 	go("Account://unregister")
 }

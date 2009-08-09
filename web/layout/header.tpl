@@ -5,6 +5,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>login</title>
 	<script type="text/javascript" src="web/js/core.js"></script>
+	<script type="text/javascript" src="web/js/api.js"></script>
 	<script type="text/javascript" src="web/js/jquery-1.3.2.min.js"></script>	
 	
 	<style type="text/css">

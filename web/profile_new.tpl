@@ -1,8 +1,8 @@
 #include "web/layout/header.tpl"
 
-<h1>Criar Profile</h1>
+<h1>Criar Perfil</h1>
 
-<form method="GET" action="ProfileManager://new">
+<form method="GET" action="ProfileManager://save">
 	<p><label for="name">Name:</label> <input type="text" id="name" name="name"/></p>
 	<p><label for="type">Tipo:</label>
 		<select name="type">

@@ -11,16 +11,21 @@ class Account(Action):
 	__acc = None
 	__call = None
 	__phone = None
+	__profile = None
 	
 	def register(self):
-		self.__acc = self.__get_phone().register( self.username, self.password, WebKitAccountListener(self.view), WebKitCallListener(self.view))
+		db = ProfileDb()
+		db.open()
+		self.__profile = db.get(self.profileName)
+		if self.__profile is None:
+			self.view.msg("Ivalid Profile")
+		else:
+			self.__acc = self.__get_phone().register( self.__profile.username, self.__profile.password, self.__profile.type, WebKitAccountListener(self.view), WebKitCallListener(self.view))
+		db.close()
 		
 	def unregister(self):
-		#TODO nao deveria ser com um listener?
-		self.__acc.unregister()
-		#TODO e assim mesmo?
-		#self.__getPhone().stop()
-		self.view.go('login.html')
+		self.__get_phone().unregister(self.__profile.username, self.__profile.type)
+		self.view.go('App.start.action')
 		
 	def call(self):
 		self.__call = self.__acc.call( self.destination )
@@ -51,19 +56,30 @@ class App(Action):
 		else:
 			if db.size() == 1:
 				profile = db.get_first()
-				print "Register and redirect"
-				return
+				if profile.auto_login == 'on':
+					print "Register and redirect"
+					return
 			
 		template = Template(file="web/profile_select.tpl")
 		template.profiles = db.find_all()
 		db.close()
 		return str(template)
+		
+	def home(self):
+		template = Template(file="web/home.tpl")
+		return str(template)
 
 class ProfileManager(Action):
 
 	def new(self):
+		template = Template(file="web/profile_new.tpl")
+		return str(template)
+
+	def save(self):
 		db = ProfileDb()
 		db.open()
+		if hasattr(self, 'auto_login') is False:
+			self.auto_login = 'off'
 		profile = Profile(self.name, self.type, self.username, self.password, self.auto_login)
 		db.add(profile)
 		db.close()
@@ -76,7 +92,7 @@ class WebKitAccountListener(AccountListener):
 		self.view = view
 	
 	def on_register_success(self, account):
-		self.view.go('home.html')
+		self.view.go('App.home.action')
 		
 	def on_register_error( self, account ):
 		self.view.msg("Falha ao registrar.")
