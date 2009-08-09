@@ -1,4 +1,4 @@
-import traceback, re, os
+import traceback, os
 from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
 from PyQt4.QtWebKit import QWebView
 from PyQt4.QtCore import QUrl, QTimer, QVariant, SIGNAL
@@ -68,18 +68,18 @@ class NetworkAccessManager(QNetworkAccessManager):
 			actionName = str(url.scheme())
 			methodName = str(url.encodedHost())
 
-			regex = None
+			is_action = False
 			
 			if url.scheme() == 'file':
-				regex = re.match(".*"+os.sep+"(.*action)$",str(url.toEncoded()))
-				if regex is None:
-					return QNetworkAccessManager.createRequest( self, operation, request )					
+				is_action = str(url.toEncoded()).endswith(".action")
+				if is_action is False:
+					return QNetworkAccessManager.createRequest( self, operation, request )
 			
-			if regex is not None:
-				fileAction = regex.group(1).split(".")
-				if fileAction[2] == "action":
-					actionName = fileAction[0]
-					methodName = fileAction[1]
+			if is_action:
+				fileAction = str(url.toEncoded()).rpartition(os.sep)[2].split(".")
+				print fileAction
+				actionName = fileAction[0]
+				methodName = fileAction[1]
 						
 			result = self.__invokeAction(actionName, methodName, url)
 			
