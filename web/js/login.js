@@ -1,3 +1,0 @@
-function $('#profile').change = function(){
-	
-}

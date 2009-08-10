@@ -6,3 +6,23 @@
 	display: block;
 	overflow: visible;
 }
+
+ul{
+	list-style: none;
+	margin: 0px;
+	padding: 0px;
+}
+.profile{
+	cursor: pointer;
+	margin: 0px;
+	padding: 2px;
+	background-color: #C0C0C0;
+}
+
+.profile:hover{
+	background-color: red;
+}
+
+#login_box{
+	display:none;
+}

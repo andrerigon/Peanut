@@ -61,7 +61,7 @@ class NetworkAccessManager(QNetworkAccessManager):
 	
 		url = request.url()
 
-		print url
+		#print url
 
 		if operation == self.GetOperation:
 			

@@ -18,7 +18,7 @@ class Account(Action):
 		db.open()
 		self.__profile = db.get(self.profileName)
 		if self.__profile is None:
-			self.view.msg("Ivalid Profile")
+			self.view.msg("Fail to register, invalid profile")
 		else:
 			self.__acc = self.__get_phone().register( self.__profile.username, self.__profile.password, self.__profile.type, WebKitAccountListener(self.view), WebKitCallListener(self.view))
 		db.close()
@@ -51,8 +51,7 @@ class App(Action):
 		db.open()
 		
 		if db.size() == 0:
-			template = Template(file="web/profile_new.tpl")
-			return str(template)
+			return ProfileManager().new()
 		else:
 			if db.size() == 1:
 				profile = db.get_first()
