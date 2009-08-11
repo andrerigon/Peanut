@@ -1,7 +1,7 @@
 import traceback, os
 from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
 from PyQt4.QtWebKit import QWebView
-from PyQt4.QtCore import QUrl, QTimer, QVariant, SIGNAL
+from PyQt4.QtCore import QUrl, QTimer, QVariant, SIGNAL, QString
 from PyQt4.QtGui import *
 from action import *
 from spring import *
@@ -9,17 +9,19 @@ import logging
 
 class WebView(QWebView):
 	
+	def __init__(self):
+		self.log = logging.getLogger(self.__class__.__name__)
+		QWebView.__init__(self);
+		
 	def go(self, url):
-		self.__runJavaScript("go('"+(url)+"')")
+		self.runJavaScript("go('"+(url)+"')")
 	
 	def msg(self, message):
-		self.__runJavaScript("showMessage('"+(message)+"')")
+		self.runJavaScript("showMessage('"+(message)+"')")
 		
-	def parse(self, html):
-		self.page().mainFrame().setHtml(html)
-		
-	def __runJavaScript(self, script):
-		self.page().mainFrame().evaluateJavaScript(script);
+	def runJavaScript(self, script):
+		self.log.debug("run javascript: "+script)
+		self.page().mainFrame().evaluateJavaScript(QString(str(script)));
 
 class HtmlReply(QNetworkReply):
 
@@ -54,6 +56,7 @@ class HtmlReply(QNetworkReply):
 class NetworkAccessManager(QNetworkAccessManager):
 	
 	def __init__(self):
+		self.log = logging.getLogger(self.__class__.__name__)
 		self.view = None 
 		self.actions = None
 		QNetworkAccessManager.__init__(self)
@@ -77,7 +80,7 @@ class NetworkAccessManager(QNetworkAccessManager):
 					return QNetworkAccessManager.createRequest( self, operation, request )
 			
 			if is_action:
-				fileAction = str(url.toEncoded()).rpartition(os.sep)[2].split(".")
+				fileAction = str(url.toEncoded()).rpartition("/")[2].split(".")
 				actionName = fileAction[0]
 				methodName = fileAction[1]
 						
@@ -92,10 +95,10 @@ class NetworkAccessManager(QNetworkAccessManager):
 	def __invokeAction(self, actionName, methodName, url):
 		#TODO review to try catch and logs
 		
-		print "DEBUG: try to invoke method '"+(methodName)+"' in action '"+(actionName)+"'."
+		self.log.debug("try to invoke method '"+(methodName)+"' in action '"+(actionName)+"'.")
 		
 		action = self.actions[actionName]
-		self.bindParameters(action, url)
+		self.bindParameters(action, url.encodedQueryItems())
 				
 		try:
 			method = getattr(action, methodName)
@@ -103,14 +106,15 @@ class NetworkAccessManager(QNetworkAccessManager):
 		
 		except Exception,e:
 			self.view.msg("ERRO inesperado")
-			print "ERROR: OPS, fail to invoke method '"+(methodName)+"' in action '"+(actionName)+"'."
-			traceback.print_exc()		
+			self.log.debug("ERROR: OPS, fail to invoke method '"+(methodName)+"' in action '"+(actionName)+"'.")
+			self.log.debug(traceback.print_exc())
 		
 
-	def bindParameters( self, action, url ):
-		print "DEBUG: Bind parametes to object"
-		for param in url.encodedQueryItems():
-			print  param[0]+" = "+ param[1]
+	def bindParameters(self, action, params_request):
+		if len(params_request) > 0:
+			self.log.debug("Bind parametes to object")
+		for param in params_request:
+			self.log.debug(param[0]+" = "+ param[1])
 			setattr(action, str(param[0]), str(param[1]))
 
 
@@ -118,9 +122,7 @@ class NetworkAccessManager(QNetworkAccessManager):
 		self.old_manager = self.view.page().networkAccessManager()
 		self.view.page().setNetworkAccessManager(self)	
 		self.view.resize(380,280) 	
-		#self.view.resize(280,180)
 		self.view.load(QUrl("App.start.action"))
-		
 		self.view.show()
 
 

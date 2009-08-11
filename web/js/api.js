@@ -1,13 +1,35 @@
 var Call = {}
 
-Call.answer = function(){
-	go("Account://answer")
+Call.answer = function(destination){
+	go("Account://answer?destination="+destination)
 }
 
-Call.hangup = function(){
-	go("Account://hangup")
+Call.hangup = function(destination){
+	go("Account://hangup?destination="+destination)
 }
 
+
+var CallListener = {}
+
+CallListener.incomming_call = function(destination){
+	showMessage("Ringing: "+ destination)
+	byId("btnAnswer").disabled = false;
+	
+	$("#btnAnswer").click(function(event){
+		byId("btnHangup").disabled = false;
+		
+		$("#btnHangup").click(function(event){
+			this.disabled = true;
+			Call.hangup(destination)
+			showMessage("End call: "+ destination)
+		});
+		
+		this.disabled = true;
+		Call.answer(destination)
+		showMessage("Ongoing call: "+ destination)
+	});
+
+}
 
 
 var Account = {}

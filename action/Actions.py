@@ -1,7 +1,6 @@
 from Peanut import Phone, AccountListener, CallListener
 from Cheetah.Template import Template
 from db import ProfileDb, Profile
-import re
 from spring import *
 
 class Action(object):
@@ -10,8 +9,6 @@ class Action(object):
 #@Lazy
 class Account(Action):
 	
-	__acc = None
-	__call = None
 	__phone = None
 	__profile = None
 	
@@ -22,7 +19,7 @@ class Account(Action):
 		if self.__profile is None:
 			self.view.msg("Fail to register, invalid profile")
 		else:
-			self.__acc = self.__get_phone().register( self.__profile.username, self.__profile.password, self.__profile.type, WebKitAccountListener(self.view), WebKitCallListener(self.view))
+			self.__get_phone().register( self.__profile.username, self.__profile.password, self.__profile.type, WebKitAccountListener(self.view), WebKitCallListener(self.view))
 		db.close()
 		
 	def unregister(self):
@@ -30,16 +27,19 @@ class Account(Action):
 		self.view.go('App.start.action')
 		
 	def call(self):
-		self.__call = self.__acc.call( self.destination )
+		self.__account().call( self.destination )
 	
 	def answer(self):
-		self.__call.answer()
+		self.__account().answer_call( self.destination )
 	
 	def hangup(self):
 		self.__call.hangup()
 	
 	def balance(self):
 		self.view.msg("TODO: implement R$ 0,00")
+	
+	def __account(self):
+		return self.__get_phone().get_account(self.__profile.username, self.profile.type)
 	
 	def __get_phone(self):
 		if self.__phone is None:
@@ -101,10 +101,7 @@ class WebKitAccountListener(AccountListener):
 		self.view.msg("Falha ao registrar.")
 		
 	def on_incoming_call( self, account, peanut_call ):
-		
-		regex = re.match('<sip:(\d+)@.*', str(peanut_call.call.info().remote_uri))
-		msg = regex.group(1) + " esta chamando" 
-		self.view.msg(msg)
+		self.view.runJavaScript("CallListener.incomming_call('"+(peanut_call.destination())+"')")
 		AccountListener.on_incoming_call(self, account, peanut_call )
 
 class WebKitCallListener(CallListener):	
@@ -112,13 +109,13 @@ class WebKitCallListener(CallListener):
 	def __init__(self, view):
 		self.view = view
 		
-	def on_answer(self, peanut_call):
+	def on_answer(self, peanut_account, peanut_call):
 		self.view.msg("Chamada Atendida.")
-		CallListener.on_answer(self, peanut_call)
+		CallListener.on_answer(self, peanut_account, peanut_call)
 		
-	def on_finished( self, peanut_call ):
+	def on_finished( self, peanut_account, peanut_call ):
 		self.view.msg("Chamada Desligada.")
-		CallListener.on_finished( self, peanut_call )
+		CallListener.on_finished( self, peanut_account, peanut_call )
 		
 		
 	
