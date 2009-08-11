@@ -2,10 +2,12 @@ from Peanut import Phone, AccountListener, CallListener
 from Cheetah.Template import Template
 from db import ProfileDb, Profile
 import re
+from spring import *
 
-class Action:
+class Action(object):
 	pass
 
+#@Lazy
 class Account(Action):
 	
 	__acc = None
@@ -44,6 +46,7 @@ class Account(Action):
 			self.__phone = Phone().start();
 		return self.__phone;
 
+#@Lazy
 class App(Action):
 	
 	def start(self):
@@ -68,6 +71,7 @@ class App(Action):
 		template = Template(file="web/home.tpl")
 		return str(template)
 
+#@Lazy
 class ProfileManager(Action):
 
 	def new(self):

@@ -4,6 +4,8 @@ from PyQt4.QtWebKit import QWebView
 from PyQt4.QtCore import QUrl, QTimer, QVariant, SIGNAL
 from PyQt4.QtGui import *
 from action import *
+from spring import *
+import logging
 
 class WebView(QWebView):
 	
@@ -24,7 +26,6 @@ class HtmlReply(QNetworkReply):
 	def __init__(self, url, operation, html):
 
 		QNetworkReply.__init__(self)
-		#print html
 		self.content = html
 		self.offset = 0
 		self.setHeader(QNetworkRequest.ContentTypeHeader, QVariant("text/html; charset=utf-8"))
@@ -93,19 +94,7 @@ class NetworkAccessManager(QNetworkAccessManager):
 		
 		print "DEBUG: try to invoke method '"+(methodName)+"' in action '"+(actionName)+"'."
 		
-		try:
-			action = getattr(self, actionName)
-			print "DEBUG: get action '"+(actionName)+"' in cache - simple attribute class"
-		except AttributeError, ae:
-			try:
-				print "DEBUG: create new instance to action '"+(actionName)+"'."
-				action = self.get_action(actionName)
-				setattr(self, methodName, actionName)
-			except Exception,e:
-				self.view.msg("ERRO inesperado")
-				print "ERROR: OPS, fail to create instance do class '"+(actionName)+"' action."
-				traceback.print_exc()
-	
+		action = self.actions[actionName]
 		self.bindParameters(action, url)
 				
 		try:
@@ -124,16 +113,6 @@ class NetworkAccessManager(QNetworkAccessManager):
 			print  param[0]+" = "+ param[1]
 			setattr(action, str(param[0]), str(param[1]))
 
-	def get_action( self, actionName ):
-		try:
-			clazz = getattr(Actions, actionName)
-			action = clazz()
-			action.view = self.view
-			
-		except AttributeError, ae:
-			print("action not found: "+actionName)			
-		return action
-		
 
 	def start(self):
 		self.old_manager = self.view.page().networkAccessManager()

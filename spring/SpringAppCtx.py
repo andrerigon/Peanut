@@ -4,26 +4,32 @@ from springpython.context import scope
 from action import *
 from PyQt4.QtWebKit import QWebView
 from Web import *
+from spring import *
+import inspect
 
 class ActionBasedApplicationContext(PythonConfig):
     def __init__(self):
+	self.view = WebView()
         super(ActionBasedApplicationContext, self).__init__()
-        
-    @Object(scope.SINGLETON)
-    def Account(self):
-	account = Account()
-	account.view = self.View()
-        self.logger.debug("Description = %s" % account)
-        return account
+	for arg in sys.argv: 
+		if arg == "--debug":
+			logging.basicConfig(level=logging.DEBUG, format="[%(asctime)s] [%(levelname)s] [%(name)s]: %(message)s")
 
     @Object(scope.SINGLETON)
     def NetworkAccessManager(self):
 	n = NetworkAccessManager()
-	n.view = self.View()
-	n.actions = { str(Account).split(".")[-1:][0] : self.Account() }
+	n.view = self.view 
+	n.actions = self.Actions()
 	return n
 
-    @Object(scope.SINGLETON)
-    def View(self):
-	return  WebView()
-
+    def Actions(self):
+		dict = {}
+		for name in dir(Actions):
+			clazz = getattr(Actions, name)
+			if isinstance(clazz, type) and issubclass(clazz, Actions.Action):
+			#if inspect.isclass(clazz) and issubclass(clazz, Actions.Action):
+				#action = clazz()
+				action = LazyProxy(clazz)
+				action.view = self.view 
+				dict[name] = action
+		return dict
