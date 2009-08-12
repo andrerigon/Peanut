@@ -30,16 +30,16 @@ class Account(Action):
 		self.__account().call( self.destination )
 	
 	def answer(self):
-		self.__account().answer_call( self.destination )
+		self.__account().answerCall( self.destination )
 	
 	def hangup(self):
-		self.__call.hangup()
+		self.__account().hangupCall( self.destination )
 	
 	def balance(self):
 		self.view.msg("TODO: implement R$ 0,00")
 	
 	def __account(self):
-		return self.__get_phone().get_account(self.__profile.username, self.profile.type)
+		return self.__get_phone().getAccount(self.__profile.username, self.__profile.type)
 	
 	def __get_phone(self):
 		if self.__phone is None:
@@ -94,28 +94,28 @@ class WebKitAccountListener(AccountListener):
 	def __init__(self, view):
 		self.view = view
 	
-	def on_register_success(self, account):
+	def onRegisterSuccess(self, account):
 		self.view.go('App.home.action')
 		
-	def on_register_error( self, account ):
+	def onRegisterError( self, account ):
 		self.view.msg("Falha ao registrar.")
 		
-	def on_incoming_call( self, account, peanut_call ):
-		self.view.runJavaScript("CallListener.incomming_call('"+(peanut_call.destination())+"')")
-		AccountListener.on_incoming_call(self, account, peanut_call )
+	def onIncomingCall( self, account, peanutCall ):
+		self.view.runJavaScript("CallListener.incomming_call('"+(peanutCall.destination())+"')")
+		AccountListener.onIncomingCall(self, account, peanutCall )
 
 class WebKitCallListener(CallListener):	
 	
 	def __init__(self, view):
 		self.view = view
 		
-	def on_answer(self, peanut_account, peanut_call):
+	def onAnswer(self, peanutAccount, peanutCall):
 		self.view.msg("Chamada Atendida.")
-		CallListener.on_answer(self, peanut_account, peanut_call)
+		CallListener.onAnswer(self, peanutAccount, peanutCall)
 		
-	def on_finished( self, peanut_account, peanut_call ):
+	def onFinished( self, peanutAccount, peanutCall ):
 		self.view.msg("Chamada Desligada.")
-		CallListener.on_finished( self, peanut_account, peanut_call )
+		CallListener.onFinished( self, peanutAccount, peanutCall )
 		
 		
 	

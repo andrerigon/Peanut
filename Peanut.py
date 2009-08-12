@@ -36,101 +36,101 @@ class Phone():
 		lib = None
 		return self
 
-	def register( self, username, password, account_type = 'azzu', account_listener = None, call_listener = None ):
+	def register( self, username, password, accountType = 'azzu', accountListener = None, callListener = None ):
 		"Make an account register"
-		if account_listener == None:
-			account_listener = AccountListener()
-		if call_listener == None:
-			call_listener = CallListener()
+		if accountListener == None:
+			accountListener = AccountListener()
+		if callListener == None:
+			callListener = CallListener()
 			
-		account_key = GenericAccount.account_key( username, account_type )
+		accountKey = GenericAccount.accountKey( username, accountType )
 			
 		# TODO do this with spring 
-		delegate_account = AzzuAccount( username, password )
-		account = GenericAccount( account_key, account_listener, call_listener, delegate_account )
+		delegateAccount = AzzuAccount( username, password )
+		account = GenericAccount( accountKey, accountListener, callListener, delegateAccount )
 		
-		self.accounts[ account_key ] = account
+		self.accounts[ accountKey ] = account
 		
 		account.register()
 		
 		return account
 	
-	def unregister( self, username, account_type = 'azzu' ):
-		account_key = GenericAccount.account_key( username, account_type )
-		self.accounts.pop( account_key ).unregister()
+	def unregister( self, username, accountType = 'azzu' ):
+		accountKey = GenericAccount.accountKey( username, accountType )
+		self.accounts.pop( accountKey ).unregister()
 	
-	def get_account( self, username, account_type = 'azzu' ):
-		account_key = GenericAccount.account_key( username, account_type )
-		return self.accounts[ account_key ]
+	def getAccount( self, username, accountType = 'azzu' ):
+		accountKey = GenericAccount.accountKey( username, accountType )
+		return self.accounts[ accountKey ]
 
 
 class GenericAccount():
 
-	def __init__( self, key, listener, call_listener, delegate ):
+	def __init__( self, key, listener, callListener, delegate ):
 		"Init of GenericAccount"
 		self.key = key
 		self.listener = listener
-		self.call_listener = call_listener
+		self.callListener = callListener
 		self.registered = False
 		self.delegate = delegate
 		self.calls = {}
 		
 	def register( self ):
 		"Register this account"
-		self.listener.on_register_request( self )
+		self.listener.onRegisterRequest( self )
 		self.delegate = self.delegate.register( self )
 		return self
 
-	def register_success( self ):
+	def registerSuccess( self ):
 		"Invoked when this account registred successfully"
 		self.registered = True
-		self.listener.on_register_success( self )
+		self.listener.onRegisterSuccess( self )
 
-	def register_error( self ):
+	def registerError( self ):
 		self.registered = False
 		"Invoked when this account has an error during its register"
-		self.listener.on_register_error( self )
+		self.listener.onRegisterError( self )
 
 	def unregister( self ):
 		self.delegate.unregister()
 		self.registered = False
-		self.listener.on_unregister( self )
+		self.listener.onUnregister( self )
 
 	def call( self, destination ):
-		peanut_call = self.delegate.call( destination, self )
-		self.calls[ peanut_call.destination() ] = peanut_call
-		return peanut_call
+		peanutCall = self.delegate.call( destination, self )
+		self.calls[ str( peanutCall.destination() ) ] = peanutCall
+		return peanutCall
 
-	def incoming_call( self, call ):
+	def incomingCall( self, call ):
 		"Register incoming call to the account"
-		peanut_call = Call( call )
+		peanutCall = Call( call )
 		
 		# Register call
-		self.calls[ peanut_call.destination() ] = peanut_call
+		self.calls[ str( peanutCall.destination() ) ] = peanutCall
 		
 		# Create Call Callback
-		call_callback = CallCallback( self, peanut_call )
-		call.set_callback( call_callback )
+		callCallback = CallCallback( self, peanutCall )
+		call.set_callback( callCallback )
 		
 		# Answer with a ring
-		peanut_call.ring()
+		peanutCall.ring()
 		
 		# Trigger incoming call event
-		self.listener.on_incoming_call( self, peanut_call )
+		self.listener.onIncomingCall( self, peanutCall )
 		
-	def answer_call( self, destination ):
-		self.calls[ destination ].answer()
+	def answerCall( self, destination ):
+		self.calls[ str( destination ) ].answer()
 		
-	def hangup_call( self, destination ):
-		self.calls[ destination ].hangup()
+	def hangupCall( self, destination ):
+		self.calls[ str( destination ) ].hangup()
 		
-	def unregister_call( self, peanut_call ):
-		self.calls.pop( peanut_call.destination() )
+	def unregisterCall( self, peanutCall ):
+		self.calls.pop( peanutCall.destination() )
 
 	@staticmethod
-	def account_key( username, account_type ):
-		string_key = str( username ) + str( account_type )
-		return hashlib.md5( string_key ).hexdigest()
+	def accountKey( username, accountType ):
+		stringKey = str( username ) + str( accountType )
+		return hashlib.md5( stringKey ).hexdigest()
 
 
 class AzzuAccount():
@@ -140,23 +140,23 @@ class AzzuAccount():
 		self.username = str( username )
 		self.password = str( password )
 
-	def register( self, generic_account ):
+	def register( self, genericAccount ):
 		"Create a Azzu Account"
 		lib = pj.Lib.instance()
 		self.proxy = socket.gethostbyname( 'proxy.azzu.com.br' )
-		account_config = pj.AccountConfig( self.proxy, self.username, self.password )
-		self.account = lib.create_account( account_config, cb = AccountCallback( generic_account ) )
+		accountConfig = pj.AccountConfig( self.proxy, self.username, self.password )
+		self.account = lib.create_account( accountConfig, cb = AccountCallback( genericAccount ) )
 		return self
 
 	def unregister( self ):
 		"Unregister this account"
 		self.account.delete()
 
-	def call( self, destination, generic_account ):
+	def call( self, destination, genericAccount ):
 		"Make a call for the destination"
-		call_string = 'sip:' + str( destination ) + '@' + self.proxy
-		call_callback = CallCallback( generic_account )
-		call = self.account.make_call( call_string, call_callback )
+		callString = 'sip:' + str( destination ) + '@' + self.proxy
+		callCallback = CallCallback( genericAccount )
+		call = self.account.make_call( callString, callCallback )
 		return Call( call )
 
 
@@ -165,45 +165,45 @@ class AccountListener():
 	def __init__( self ):
 		"Init an Account Listener"
 
-	def on_register_request( self, account ):
+	def onRegisterRequest( self, account ):
 		"Invoked when the account register is requested"
 		print 'Account Register requested: username ' + account.delegate.username
 
-	def on_register_success( self, account ):
+	def onRegisterSuccess( self, account ):
 		"Invoked when the account registred successfully"
 		print 'Account Registred: username ' + account.delegate.username
 
-	def on_register_error( self, account ):
+	def onRegisterError( self, account ):
 		"Invoked when the account has a regiter error"
 		print 'Error Registering the Account: username ' + account.delegate.username
 
-	def on_unregister( self, account ):
+	def onUnregister( self, account ):
 		"Invoked when the account was unregistered"
 		print 'Account Unregistered: username ' + account.delegate.username
 
-	def on_incoming_call( self, account, peanut_call ):
+	def onIncomingCall( self, account, peanutCall ):
 		"Invoked when the account receive an incoming call"
-		print 'Incoming Call for account with username ' + account.delegate.username + ' from: ' + peanut_call.call.info().remote_uri
+		print 'Incoming Call for account with username ' + account.delegate.username + ' from: ' + peanutCall.destination()
 
 
 class AccountCallback( pj.AccountCallback ):
 
-	def __init__( self, peanut_account, account=None, ):
+	def __init__( self, peanutAccount, account=None, ):
 		"Create an Account Callback for the passed account"
-		self.peanut_account = peanut_account
+		self.peanutAccount = peanutAccount
 		pj.AccountCallback.__init__( self, account )
 
 	def on_incoming_call( self, call ):
 		# Register the incomming call into the account 
-		self.peanut_account.incoming_call( call )
+		self.peanutAccount.incomingCall( call )
 
 	def on_reg_state( self ):
 		"Register handler"
 		print 'reg_status: ' + str( self.account.info().reg_status ) + ' reason: ' + self.account.info().reg_reason
 		if self.account.info().reg_status == 200:
-			self.peanut_account.register_success()
+			self.peanutAccount.registerSuccess()
 		if self.account.info().reg_status > 700:
-			self.peanut_account.register_error()
+			self.peanutAccount.registerError()
 
 
 class Call():
@@ -211,10 +211,10 @@ class Call():
 	def __init__( self, call ):
 		"Create a Call receiving a pjsua call"
 		self.call = call
-		self.speak_on_conf = False
+		self.speakOnConf = False
 		
 	def destination( self ):
-		regex = re.match('<sip:(\d+)@.*', str(self.call.info().remote_uri))
+		regex = re.match('<?sip:(\d+)@', str(self.call.info().remote_uri))
 		return regex.group(1)
 
 	def answer( self ):
@@ -250,11 +250,11 @@ class Call():
 
 	def mute( self ):
 		"Mute this call"
-		AudioManager().disconnect_output_audio( self.call )
+		AudioManager().disconnectOutputAudio( self.call )
 		return self
 
 	def unmute( self ):
-		AudioManager().connect_output_audio( self.call )
+		AudioManager().connectOutputAudio( self.call )
 		return self
 	
 
@@ -263,62 +263,62 @@ class CallListener():
 	def __init__( self ):
 		"Init a Call Listener"
 
-	def on_calling( self, peanut_account, peanut_call ):
+	def onCalling( self, peanutAccount, peanutCall ):
 		"Invoked when a call is started but is not connected or finished"
-		print 'Trying to call to ' + peanut_call.call.info().remote_uri
+		print 'Trying to call to ' + peanutCall.destination()
 
-	def on_ringing( self, peanut_account, peanut_call ):
+	def onRinging( self, peanutAccount, peanutCall ):
 		"Invoked when a call is in ringing status"
-		print 'Ringing call with ' + peanut_call.call.info().remote_uri
+		print 'Ringing call with ' + peanutCall.destination()
 
-	def on_connecting( self, peanut_account, peanut_call ):
+	def onConnecting( self, peanutAccount, peanutCall ):
 		"Invoked when a call is connecting"
-		print 'Connecting call with ' + peanut_call.call.info().remote_uri
+		print 'Connecting call with ' + peanutCall.destination()
 
-	def on_answer( self, peanut_account, peanut_call ):
+	def onAnswer( self, peanutAccount, peanutCall ):
 		"Invoked when a call is answered"
-		print 'Call answered with ' + peanut_call.call.info().remote_uri
+		print 'Call answered with ' + peanutCall.destination()
 
-	def on_finished( self, peanut_account, peanut_call ):
+	def onFinished( self, peanutAccount, peanutCall ):
 		"Invoked when a call is finished"
-		peanut_account.unregister_call( peanut_call )
-		print 'Call finished with ' + peanut_call.call.info().remote_uri
+		peanutAccount.unregisterCall( peanutCall )
+		print 'Call finished with ' + peanutCall.destination()
 # TODO add more usefull listener methods
 
 
 class CallCallback( pj.CallCallback ):
 
-	def __init__( self, peanut_account, peanut_call=None, call=None ):
+	def __init__( self, peanutAccount, peanutCall=None, call=None ):
 		"Create a Call Callback"
-		self.call_listener = peanut_account.call_listener
-		self.peanut_account = peanut_account
-		self.peanut_call = peanut_call
+		self.callListener = peanutAccount.callListener
+		self.peanutAccount = peanutAccount
+		self.peanutCall = peanutCall
 		pj.CallCallback.__init__( self, call )
 
 	def on_state( self ):
 		"Intercept any call state change"
-		if self.peanut_call == None:
-			self.peanut_call = Call( self.call )
+		if self.peanutCall == None:
+			self.peanutCall = Call( self.call )
 		# State where an outcoming call has just been requested
 		if self.call.info().state == pj.CallState.CALLING:
-			self.call_listener.on_calling( self.peanut_account, self.peanut_call )
+			self.callListener.onCalling( self.peanutAccount, self.peanutCall )
 		# State where a call is in ringing
-		if self.call.info().state == pj.CallState.EARLY:
-			self.call_listener.on_ringing( self.peanut_account, self.peanut_call )
+		elif self.call.info().state == pj.CallState.EARLY:
+			self.callListener.onRinging( self.peanutAccount, self.peanutCall )
 		# State where a call was received and is almost confirmed
-		if self.call.info().state == pj.CallState.CONNECTING:
-			self.call_listener.on_connecting( self.peanut_account, self.peanut_call )
+		elif self.call.info().state == pj.CallState.CONNECTING:
+			self.callListener.onConnecting( self.peanutAccount, self.peanutCall )
 		# State where a call is answered and confiremd
-		if self.call.info().state == pj.CallState.CONFIRMED:
-			self.call_listener.on_answer( self.peanut_account, self.peanut_call )
+		elif self.call.info().state == pj.CallState.CONFIRMED:
+			self.callListener.onAnswer( self.peanutAccount, self.peanutCall )
 		# State where a call is finished and disconnected
-		if self.call.info().state == pj.CallState.DISCONNECTED:
-			self.call_listener.on_finished( self.peanut_account, self.peanut_call )
+		elif self.call.info().state == pj.CallState.DISCONNECTED:
+			self.callListener.onFinished( self.peanutAccount, self.peanutCall )
 
 	def on_media_state( self ):
 		"Intercept any media state change"
 		if self.call.info().media_state == pj.MediaState.ACTIVE:
-			AudioManager().connect_call_audio( self.call )
+			AudioManager().connectCallAudio( self.call )
 
 
 class AudioManager():
@@ -326,55 +326,55 @@ class AudioManager():
 	def __init__( self ):
 		"Init method for AudioManager"
 
-	def connect_conf_audio( self, calls ):
+	def connectConfAudio( self, calls ):
 		"Connect the slots to make a conference"
 		lib = pj.Lib.instance()
 		for c1 in calls:
-			if c1.speak_on_conf:
+			if c1.speakOnConf:
 				for c2 in calls:
 					if c1 != c2:
 						slot1 = c1.call.info().conf_slot
 						slot2 = c2.call.info().conf_slot
 						lib.conf_connect( slot1, slot2 )
 
-	def connect_call_audio( self, call ):
+	def connectCallAudio( self, call ):
 		"Connect the call slot to the audio device"
 		lib = pj.Lib.instance()
-		call_slot = call.info().conf_slot
-		lib.conf_connect( call_slot, 0 )
-		lib.conf_connect( 0, call_slot )
+		callSlot = call.info().conf_slot
+		lib.conf_connect( callSlot, 0 )
+		lib.conf_connect( 0, callSlot )
 
-	def disconnect_call_audio( self, call ):
+	def disconnectCallAudio( self, call ):
 		"Disconnect the call slot to the audio device"
 		lib = pj.Lib.instance()
-		call_slot = call.info().conf_slot
-		lib.conf_disconnect( call_slot, 0 )
-		lib.conf_disconnect( 0, call_slot )
+		callSlot = call.info().conf_slot
+		lib.conf_disconnect( callSlot, 0 )
+		lib.conf_disconnect( 0, callSlot )
 
-	def connect_output_audio( self, call ):
+	def connectOutputAudio( self, call ):
 		"Connect only de output slot to the call slot"
 		lib = pj.Lib.instance()
-		call_slot = call.info().conf_slot
-		lib.conf_connect( 0, call_slot )
+		callSlot = call.info().conf_slot
+		lib.conf_connect( 0, callSlot )
 
-	def disconnect_output_audio( self, call ):
+	def disconnectOutputAudio( self, call ):
 		"Disconnect only de output slot to the call slot"
 		lib = pj.Lib.instance()
-		call_slot = call.info().conf_slot
-		lib.conf_disconnect( 0, call_slot )
+		callSlot = call.info().conf_slot
+		lib.conf_disconnect( 0, callSlot )
 
-	def list_audio_devices( self ):
+	def listAudioDevices( self ):
 		"List all the audio devices into the system"
 		lib = pj.Lib.instance()
 		devices = lib.enum_snd_dev()
-		peanut_devices = []
+		peanutDevices = []
 		i = 0
 		for dev in devices:
-			peanut_devices.append( AudioDevice( dev, i ) )
+			peanutDevices.append( AudioDevice( dev, i ) )
 			i += 1
-		return peanut_devices
+		return peanutDevices
 
-	def set_audio_devices( self, input, output ):
+	def setAudioDevices( self, input, output ):
 		"Set the input and the output device for the PeanutPhone"
 		lib = pj.Lib.instance()
 		lib.set_snd_dev( input.id, output.id )
@@ -387,30 +387,30 @@ class AudioDevice():
 		self.device = device
 		self.id = id
 
-	def is_output( self ):
+	def isOutput( self ):
 		"Returns true if this is an output device"
 		return self.device.output_channels > 0
 
-	def is_input( self ):
+	def isInput( self ):
 		"Return true if this is an input device"
 		return self.device.input_channels > 0
 
-	def device_type( self ):
+	def deviceType( self ):
 		"Return a string that describes the type of the device"
-		if self.is_output():
+		if self.isOutput():
 			return 'OUTPUT'
-		elif self.is_input():
+		elif self.isInput():
 			return 'INPUT'
 		return 'NULL'
 			
-	def is_active( self ):
+	def isActive( self ):
 		"Return true if this device is currently used by the phone"
 		lib = pj.Lib.instance()
-		active_ids = lib.get_snd_dev()
-		if self.is_input():
-			return self.id == active_ids[0]
-		elif self.is_output():
-			return self.id == active_ids[1]
+		activeIds = lib.get_snd_dev()
+		if self.isInput():
+			return self.id == activeIds[0]
+		elif self.isOutput():
+			return self.id == activeIds[1]
 		return False
 
 	def name( self ):
@@ -419,5 +419,5 @@ class AudioDevice():
 
 	def __str__( self ):
 		return 'Device { id:' + str( self.id ) + ', name:' + self.name() + \
-		', active: ' + str( self.is_active() ) + ', type:' + self.device_type() + '}'
+		', active: ' + str( self.isActive() ) + ', type:' + self.deviceType() + '}'
 		

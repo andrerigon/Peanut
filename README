@@ -51,7 +51,7 @@ sudo make install
 Install PJSIP:
 ------------------------------------------------------------------------
 svn co http://svn.pjsip.org/repos/pjproject/trunk pjproject
-/configure && make && make dep
+./configure && make dep && make clean && make
 cd pjsip-apps/src/python
 sudo make
 
